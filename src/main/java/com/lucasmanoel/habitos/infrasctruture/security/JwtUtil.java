@@ -1,5 +1,6 @@
 package com.lucasmanoel.habitos.infrasctruture.security;
 
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -13,21 +14,11 @@ import java.util.Date;
 public class JwtUtil {
 
     // Chave secreta usada para assinar e verificar tokens JWT
-    private static final String secretKey = "8z8vB6B3n2z5C8D1G4J7M0Q3S6V9Y2B5E8H1K4M7P0S3V6Y9";
+    private static final String secretKey = "8d82e629-1141-47cb-9a0e-ff303f7a5a83";
 
     private SecretKey getSecretKey(){
         byte[] key = Base64.getDecoder().decode(secretKey);
         return Keys.hmacShaKeyFor(key);
-    }
-
-    // Gera um token JWT com o nome de usuário e validade de 1 hora
-    public String generateToken(String username) {
-        return Jwts.builder()
-                .subject(username) // Define o email de usuário como o assunto do token
-                .issuedAt(new Date()) // Define a data e hora de emissão do token
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // Define a data e hora de expiração (1 hora a partir da emissão)
-                .signWith(getSecretKey())// Converte a chave secreta em bytes e assina o token com ela
-                .compact(); // Constrói o token JWT
     }
 
     // Extrai as claims do token JWT (informações adicionais do token)
