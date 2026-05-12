@@ -1,12 +1,13 @@
 package com.lucasmanoel.habitos.business;
 
 import com.lucasmanoel.habitos.business.dto.habitosDTORecords;
-import com.lucasmanoel.habitos.business.mapper.habitosConverter;
-import com.lucasmanoel.habitos.business.mapper.habitosUpdateConverter;
+import com.lucasmanoel.habitos.business.mapper.HabitosConverter;
+import com.lucasmanoel.habitos.business.mapper.HabitosUpdateConverter;
 import com.lucasmanoel.habitos.infrasctruture.entity.CheckinEntity;
 import com.lucasmanoel.habitos.infrasctruture.entity.HabitosEntity;
 import com.lucasmanoel.habitos.infrasctruture.exceptions.ResourceNotFoundException;
-import com.lucasmanoel.habitos.infrasctruture.repository.habitosRepository;
+import com.lucasmanoel.habitos.infrasctruture.repository.CheckinRepository;
+import com.lucasmanoel.habitos.infrasctruture.repository.HabitosRepository;
 import com.lucasmanoel.habitos.infrasctruture.security.JwtUtil;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +19,15 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-@Data
 @RequiredArgsConstructor
-public class habitosService {
-    private JwtUtil jwtUtil;
-    private static  habitosConverter habitosConverter;
-    private habitosUpdateConverter habitosUpdateConverter;
-    private habitosRepository habitosRepository;
+public class HabitosService {
+    private  final JwtUtil jwtUtil;
+    private  final HabitosConverter habitosConverter;
+    private  final HabitosUpdateConverter habitosUpdateConverter;
+    private  final HabitosRepository habitosRepository;
+    private  final CheckinRepository checkinRepository;
 
-    public void cadastroHabito(String token, habitosDTORecords dto){
+    public habitosDTORecords cadastroHabito(String token, habitosDTORecords dto){
         String email = jwtUtil.extrairEmailToken(token.substring(7));
         HabitosEntity entity = HabitosEntity.builder()
                 .nome(dto.nome())
@@ -35,24 +36,27 @@ public class habitosService {
                 .dataCriacao(LocalDateTime.now())
                 .ativo(true)
                 .build();
-        habitosRepository.save(entity);
+
+        return habitosConverter.paraHabitosDTO(habitosRepository.save(entity));
     }
 
-    public void DesativaHabito(String id){
+    public void desativaHabito(String id){
         HabitosEntity entity = habitosRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Id não encontrado")
         );
 
         entity.setAtivo(false);
-        habitosUpdateConverter.desativaHabito(entity);
-        habitosConverter.paraHabitosDTO(habitosRepository.save(entity));
+        habitosRepository.save(entity);
     }
 
-    public void DeletaHabito(String id){
+    public void deletaHabito(String id){
+        HabitosEntity entity = habitosRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Id não encontrado")
+        );
         habitosRepository.deleteById(id);
     }
 
-    public habitosDTORecords AlteraHabito(habitosDTORecords dto, String id){
+    public habitosDTORecords alteraHabito(habitosDTORecords dto, String id){
         HabitosEntity entity = habitosRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Id não encontrado")
         );
@@ -60,19 +64,25 @@ public class habitosService {
         return habitosConverter.paraHabitosDTO(habitosRepository.save(entity));
     }
 
-    public void efetuarCheckin(String id){
-        CheckinEntity.builder()
-                .HabitosId(id)
+    public int efetuarCheckin(String id){
+        HabitosEntity entity = habitosRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Id não encontrado")
+        );
+        CheckinEntity checkin = CheckinEntity.builder()
+                .HabitosId(entity.getId())
                 .data(LocalDate.now())
                 .build();
+        checkinRepository.save(checkin);
+        return calcularStreak(entity.getId());
     }
 
-   public List<CheckinEntity> historicoCheckin(String habitoId){
+    public List<CheckinEntity> historicoCheckin(String habitoId){
         LocalDate data = LocalDate.now().minusDays(30);
-       return habitosRepository.findByHabitosIDAndDataAfter(habitoId, data);
+       return checkinRepository.findByHabitosIDAndDataAfter(habitoId, data);
    }
-   public int calcularStreak(String habitoId){
-        List<CheckinEntity> buscarLista = habitosRepository.findByHabitosId(habitoId);
+
+    public int calcularStreak(String habitoId){
+        List<CheckinEntity> buscarLista = checkinRepository.findByHabitosId(habitoId);
         buscarLista.sort(Comparator.comparing(CheckinEntity::getData).reversed());
 
         LocalDate dataEsperada = LocalDate.now();
@@ -88,6 +98,4 @@ public class habitosService {
         }
         return streak;
    }
-
-
 }
