@@ -4,6 +4,7 @@ package com.lucasmanoel.habitos.infrasctruture.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -14,7 +15,8 @@ import java.util.Date;
 public class JwtUtil {
 
     // Chave secreta usada para assinar e verificar tokens JWT
-    private static final String secretKey = "8d82e629-1141-47cb-9a0e-ff303f7a5a83";
+    @Value("${jwt.secret}")
+    private  String secretKey;
 
     private SecretKey getSecretKey(){
         byte[] key = Base64.getDecoder().decode(secretKey);
