@@ -9,5 +9,4 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface HabitosUpdateConverter {
     void updateHabitos(habitosDTORecords dto, @MappingTarget HabitosEntity entity);
-    void desativaHabito(@MappingTarget HabitosEntity entity);
 }

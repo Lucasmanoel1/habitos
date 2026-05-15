@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface CheckinRepository extends MongoRepository<CheckinEntity, String> {
     List<CheckinEntity> findByHabitosIDAndDataAfter(String habitoId, LocalDate data);
-    List<CheckinEntity> findByHabitosId(String habitoId);
+    List<CheckinEntity> findByHabitosID(String habitoId);
+    boolean existsByHabitosIDAndData(String habitoId, LocalDate data);
 }

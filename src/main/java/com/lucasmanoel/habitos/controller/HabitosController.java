@@ -1,10 +1,12 @@
 package com.lucasmanoel.habitos.controller;
 
-import com.lucasmanoel.habitos.business.dto.habitosDTORecords;
 import com.lucasmanoel.habitos.business.HabitosService;
-import com.lucasmanoel.habitos.infrasctruture.entity.CheckinEntity;
+import com.lucasmanoel.habitos.business.dto.CheckinDTORecords;
+import com.lucasmanoel.habitos.business.dto.habitosDTORecords;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/habitos")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class HabitosController {
 
@@ -25,9 +28,8 @@ public class HabitosController {
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<habitosDTORecords> cadastroHabito(@RequestHeader("Authorization")
-                                                                String token, @RequestBody habitosDTORecords dto){
-        return ResponseEntity.status(HttpStatus.CREATED).body((habitosService.cadastroHabito(token, dto)));
+    public ResponseEntity<habitosDTORecords> cadastroHabito(@Valid @RequestBody habitosDTORecords dto){
+        return ResponseEntity.status(HttpStatus.CREATED).body((habitosService.cadastroHabito(dto)));
     }
 
     @PatchMapping("/{id}")
@@ -57,14 +59,14 @@ public class HabitosController {
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<habitosDTORecords> alteraHabito (@RequestBody habitosDTORecords dto,
+    public ResponseEntity<habitosDTORecords> alteraHabito (@Valid @RequestBody habitosDTORecords dto,
                                                            @PathVariable String id){
         return ResponseEntity.ok(habitosService.alteraHabito(dto, id));
     }
 
     @PostMapping("/checkin")
     @Operation(summary = "Check-in", description = "Check-in diario")
-    @ApiResponse(responseCode = "200", description = "Check-in realizado")
+    @ApiResponse(responseCode = "201", description = "Check-in realizado")
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
@@ -78,7 +80,7 @@ public class HabitosController {
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<List<CheckinEntity>> historicoCheckin(@RequestParam String habitoId){
+    public ResponseEntity<List<CheckinDTORecords>> historicoCheckin(@RequestParam String habitoId){
         return ResponseEntity.ok(habitosService.historicoCheckin(habitoId));
     }
 
