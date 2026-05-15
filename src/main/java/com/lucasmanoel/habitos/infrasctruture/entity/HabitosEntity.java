@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class HabitosEntity {
 
     @Id
-    private String id;
+    private String habitosID;
     private String nome;
     private String email;
     private String descricao;
